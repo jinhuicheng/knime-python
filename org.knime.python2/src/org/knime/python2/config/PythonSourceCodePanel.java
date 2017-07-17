@@ -427,8 +427,10 @@ public class PythonSourceCodePanel extends SourceCodePanel {
                             m_progressMonitor.setCanceled(true);
                         }
                         if (m_kernelManager != null) {
+                            m_lock.lock();
                             m_kernelManager.close();
                             m_kernelManager = null;
+                            m_lock.unlock();
                         }
                         setInteractive(false);
                         if ((exception.getCause() == null)
@@ -441,8 +443,14 @@ public class PythonSourceCodePanel extends SourceCodePanel {
                     setRunning(false);
                 }
             }, new ExecutionMonitor(m_progressMonitor), getRowLimit());
-            for (final WorkspacePreparer workspacePreparer : m_workspacePreparers) {
-                workspacePreparer.prepareWorkspace(m_kernelManager.getKernel());
+            if(m_kernelManager != null) {
+                m_lock.lock();
+                if(m_kernelManager != null) {
+                    for (final WorkspacePreparer workspacePreparer : m_workspacePreparers) {
+                        workspacePreparer.prepareWorkspace(m_kernelManager.getKernel());
+                    }
+                }
+                m_lock.unlock();
             }
         }
     }
