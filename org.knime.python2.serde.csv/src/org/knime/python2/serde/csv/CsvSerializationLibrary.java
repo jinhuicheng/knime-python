@@ -64,6 +64,7 @@ import org.knime.python2.extensions.serializationlibrary.interfaces.Row;
 import org.knime.python2.extensions.serializationlibrary.interfaces.SerializationLibrary;
 import org.knime.python2.extensions.serializationlibrary.interfaces.TableCreator;
 import org.knime.python2.extensions.serializationlibrary.interfaces.TableIterator;
+import org.knime.python2.extensions.serializationlibrary.interfaces.TableRep;
 import org.knime.python2.extensions.serializationlibrary.interfaces.TableSpec;
 import org.knime.python2.extensions.serializationlibrary.interfaces.Type;
 import org.knime.python2.extensions.serializationlibrary.interfaces.impl.CellImpl;
@@ -86,7 +87,8 @@ public class CsvSerializationLibrary implements SerializationLibrary {
      * @return The bytes that should be send to python.
      */
     @Override
-    public byte[] tableToBytes(final TableIterator tableIterator, final SerializationOptions serializationOptions) {
+    public byte[] tableToBytes(final TableRep tableRep, final SerializationOptions serializationOptions) {
+        TableIterator tableIterator = tableRep.getRowIterator();
         try {
             final File file = File.createTempFile("java-to-python-", ".csv");
             file.deleteOnExit();

@@ -60,6 +60,7 @@ import org.knime.python2.extensions.serializationlibrary.interfaces.Row;
 import org.knime.python2.extensions.serializationlibrary.interfaces.SerializationLibrary;
 import org.knime.python2.extensions.serializationlibrary.interfaces.TableCreator;
 import org.knime.python2.extensions.serializationlibrary.interfaces.TableIterator;
+import org.knime.python2.extensions.serializationlibrary.interfaces.TableRep;
 import org.knime.python2.extensions.serializationlibrary.interfaces.TableSpec;
 import org.knime.python2.extensions.serializationlibrary.interfaces.Type;
 import org.knime.python2.extensions.serializationlibrary.interfaces.impl.CellImpl;
@@ -99,8 +100,8 @@ import com.google.flatbuffers.FlatBufferBuilder;
 public class Flatbuffers implements SerializationLibrary {
 
     @Override
-    public byte[] tableToBytes(final TableIterator tableIterator, final SerializationOptions serializationOptions) {
-
+    public byte[] tableToBytes(final TableRep tableRep, final SerializationOptions serializationOptions) {
+        TableIterator tableIterator = tableRep.getRowIterator();
         final FlatBufferBuilder builder = new FlatBufferBuilder();
         final Map<String, List<Object>> columns = new LinkedHashMap<>();
         final Map<String, boolean[]> missing = new HashMap<>();

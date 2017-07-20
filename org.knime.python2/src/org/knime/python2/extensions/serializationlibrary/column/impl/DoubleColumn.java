@@ -1,5 +1,6 @@
 /*
  * ------------------------------------------------------------------------
+ *
  *  Copyright by KNIME GmbH, Konstanz, Germany
  *  Website: http://www.knime.org; Email: contact@knime.org
  *
@@ -40,44 +41,56 @@
  *  propagated with or for interoperation with KNIME.  The owner of a Node
  *  may freely choose the license terms applicable to such Node, including
  *  when such Node is propagated with or for interoperation with KNIME.
- * ------------------------------------------------------------------------
+ * ---------------------------------------------------------------------
+ *
+ * History
+ *   Jul 20, 2017 (clemens): created
  */
-
-package org.knime.python2.extensions.serializationlibrary.interfaces;
-
-import org.knime.python2.extensions.serializationlibrary.SerializationOptions;
+package org.knime.python2.extensions.serializationlibrary.column.impl;
 
 /**
- * A serialization library used to encode and decode tables for data transfer between java and python.
+ * A column implementation for a specific type.
  *
- * @author Patrick Winter
+ * @author Clemens von Schwerin, KNIME GmbH, Konstanz, Germany
  */
-public interface SerializationLibrary {
+public class DoubleColumn extends MissingPossibleColumn {
+
+    double[] m_values;
 
     /**
-     * Converts the given table into bytes for transfer to python.
-     *
-     * @param tableRep Table representation for the table that should be converted.
-     * @param serializationOptions All options that control the serialization process.
-     * @return The bytes that should be send to python.
+     * Constructor.
+     * @param capacity  the number of values that can be stored
      */
-    byte[] tableToBytes(TableRep tableRep, SerializationOptions serializationOptions);
+    public DoubleColumn(final int capacity) {
+        super(capacity);
+        m_values = new double[capacity];
+    }
+
 
     /**
-     * Adds the rows contained in the bytes to the given {@link TableCreator}.
-     *
-     * @param tableCreator The {@link TableCreator} that the rows should be added to.
-     * @param serializationOptions All options that control the serialization process.
-     * @param bytes The bytes containing the encoded table.
+     * Set a new value at a specific position in this column.
+     * @param index the position
+     * @param value a new value
      */
-    void bytesIntoTable(TableCreator<?> tableCreator, byte[] bytes, SerializationOptions serializationOptions);
+    public void set(final int index, final double value) {
+        m_values[index] = value;
+    }
 
     /**
-     * Extracts the {@link TableSpec} of the given table.
-     *
-     * @param bytes The encoded table.
-     * @return The {@link TableSpec} of the encoded table.
+     * Get the value at position index in this column.
+     * @param index a position in the column (0 <= index < capacity)
+     * @return the value
      */
-    TableSpec tableSpecFromBytes(byte[] bytes);
+    public double get(final int index) {
+        return m_values[index];
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int getValueCount() {
+        return m_values.length;
+    }
 
 }

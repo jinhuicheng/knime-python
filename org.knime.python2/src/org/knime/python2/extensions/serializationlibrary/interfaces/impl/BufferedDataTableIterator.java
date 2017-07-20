@@ -46,27 +46,21 @@
 package org.knime.python2.extensions.serializationlibrary.interfaces.impl;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.knime.core.data.BooleanValue;
 import org.knime.core.data.DataCell;
-import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataRow;
-import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.DoubleValue;
 import org.knime.core.data.IntValue;
 import org.knime.core.data.LongValue;
 import org.knime.core.data.StringValue;
 import org.knime.core.data.collection.CollectionDataValue;
-import org.knime.core.data.collection.SetDataValue;
 import org.knime.core.data.container.CloseableRowIterator;
 import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.ExecutionMonitor;
 import org.knime.core.node.NodeLogger;
-import org.knime.python.typeextension.KnimeToPythonExtension;
 import org.knime.python.typeextension.KnimeToPythonExtensions;
 import org.knime.python.typeextension.Serializer;
 import org.knime.python2.extensions.serializationlibrary.interfaces.Row;
@@ -97,20 +91,6 @@ public class BufferedDataTableIterator implements TableIterator {
     private final ExecutionMonitor m_executionMonitor;
 
     private final BufferedDataTableChunker.IterationProperties m_iterIterationProperties;
-
-    /**
-     * Constructor.
-     *
-     * @param spec the spec of the table to chunk in the standard KNIME format
-     * @param rowIterator an iterator for the table to chunk
-     * @param numberRows the number of rows of the table to chunk
-     * @param monitor an execution monitor for reporting progress
-     * @param ip iteration properties shared with the associated chunker to ensure a consistent state
-     */
-    public BufferedDataTableIterator(final DataTableSpec spec, final CloseableRowIterator rowIterator,
-        final int numberRows, final ExecutionMonitor monitor, final BufferedDataTableChunker.IterationProperties ip) {
-        this(dataTableSpecToTableSpec(spec), rowIterator, numberRows, monitor, ip);
-    }
 
     /**
      * Constructor.
@@ -315,81 +295,5 @@ public class BufferedDataTableIterator implements TableIterator {
             }
         }
         return row;
-    }
-
-    /**
-     * Convert a {@link DataTableSpec} to a {@link TableSpec}
-     *
-     * @param dataRow a {@link DataTableSpec}
-     * @return a {@link TableSpec}
-     */
-
-    static TableSpec dataTableSpecToTableSpec(final DataTableSpec dataTableSpec) {
-        final Type[] types = new Type[dataTableSpec.getNumColumns()];
-        final String[] names = new String[dataTableSpec.getNumColumns()];
-        final Map<String, String> columnSerializers = new HashMap<String, String>();
-        int i = 0;
-        for (final DataColumnSpec colSpec : dataTableSpec) {
-            names[i] = colSpec.getName();
-            if (colSpec.getType().isCompatible(BooleanValue.class)) {
-                types[i] = Type.BOOLEAN;
-            } else if (colSpec.getType().isCompatible(IntValue.class)) {
-                types[i] = Type.INTEGER;
-            } else if (colSpec.getType().isCompatible(LongValue.class)) {
-                types[i] = Type.LONG;
-            } else if (colSpec.getType().isCompatible(DoubleValue.class)) {
-                types[i] = Type.DOUBLE;
-            } else if (colSpec.getType().isCollectionType()) {
-                if (colSpec.getType().isCompatible(SetDataValue.class)) {
-                    if (colSpec.getType().getCollectionElementType().isCompatible(BooleanValue.class)) {
-                        types[i] = Type.BOOLEAN_SET;
-                    } else if (colSpec.getType().getCollectionElementType().isCompatible(IntValue.class)) {
-                        types[i] = Type.INTEGER_SET;
-                    } else if (colSpec.getType().getCollectionElementType().isCompatible(LongValue.class)) {
-                        types[i] = Type.LONG_SET;
-                    } else if (colSpec.getType().getCollectionElementType().isCompatible(DoubleValue.class)) {
-                        types[i] = Type.DOUBLE_SET;
-                    } else {
-                        final KnimeToPythonExtension typeExtension =
-                                KnimeToPythonExtensions.getExtension(colSpec.getType().getCollectionElementType());
-                        if (typeExtension != null) {
-                            types[i] = Type.BYTES_SET;
-                            columnSerializers.put(colSpec.getName(), typeExtension.getId());
-                        } else {
-                            types[i] = Type.STRING_SET;
-                        }
-                    }
-                } else {
-                    if (colSpec.getType().getCollectionElementType().isCompatible(BooleanValue.class)) {
-                        types[i] = Type.BOOLEAN_LIST;
-                    } else if (colSpec.getType().getCollectionElementType().isCompatible(IntValue.class)) {
-                        types[i] = Type.INTEGER_LIST;
-                    } else if (colSpec.getType().getCollectionElementType().isCompatible(LongValue.class)) {
-                        types[i] = Type.LONG_LIST;
-                    } else if (colSpec.getType().getCollectionElementType().isCompatible(DoubleValue.class)) {
-                        types[i] = Type.DOUBLE_LIST;
-                    } else {
-                        final KnimeToPythonExtension typeExtension =
-                                KnimeToPythonExtensions.getExtension(colSpec.getType().getCollectionElementType());
-                        if (typeExtension != null) {
-                            types[i] = Type.BYTES_LIST;
-                            columnSerializers.put(colSpec.getName(), typeExtension.getId());
-                        } else {
-                            types[i] = Type.STRING_LIST;
-                        }
-                    }
-                }
-            } else {
-                final KnimeToPythonExtension typeExtension = KnimeToPythonExtensions.getExtension(colSpec.getType());
-                if (typeExtension != null) {
-                    types[i] = Type.BYTES;
-                    columnSerializers.put(colSpec.getName(), typeExtension.getId());
-                } else {
-                    types[i] = Type.STRING;
-                }
-            }
-            i++;
-        }
-        return new TableSpecImpl(types, names, columnSerializers);
     }
 }

@@ -1,5 +1,6 @@
 /*
  * ------------------------------------------------------------------------
+ *
  *  Copyright by KNIME GmbH, Konstanz, Germany
  *  Website: http://www.knime.org; Email: contact@knime.org
  *
@@ -40,44 +41,45 @@
  *  propagated with or for interoperation with KNIME.  The owner of a Node
  *  may freely choose the license terms applicable to such Node, including
  *  when such Node is propagated with or for interoperation with KNIME.
- * ------------------------------------------------------------------------
+ * ---------------------------------------------------------------------
+ *
+ * History
+ *   Jul 20, 2017 (clemens): created
  */
+package org.knime.python2.extensions.serializationlibrary.column.interfaces;
 
-package org.knime.python2.extensions.serializationlibrary.interfaces;
+import java.util.Iterator;
 
-import org.knime.python2.extensions.serializationlibrary.SerializationOptions;
+import org.knime.python2.extensions.serializationlibrary.interfaces.TableSpec;
 
 /**
- * A serialization library used to encode and decode tables for data transfer between java and python.
+ * Iterator for columnar table access.
  *
- * @author Patrick Winter
+ * @author Clemens von Schwerin, KNIME GmbH, Konstanz, Germany
  */
-public interface SerializationLibrary {
+public interface TableColumnIterator extends Iterator<Column> {
 
     /**
-     * Converts the given table into bytes for transfer to python.
-     *
-     * @param tableRep Table representation for the table that should be converted.
-     * @param serializationOptions All options that control the serialization process.
-     * @return The bytes that should be send to python.
+     * {@inheritDoc}
      */
-    byte[] tableToBytes(TableRep tableRep, SerializationOptions serializationOptions);
+    @Override
+    Column next();
 
     /**
-     * Adds the rows contained in the bytes to the given {@link TableCreator}.
-     *
-     * @param tableCreator The {@link TableCreator} that the rows should be added to.
-     * @param serializationOptions All options that control the serialization process.
-     * @param bytes The bytes containing the encoded table.
+     * {@inheritDoc}
      */
-    void bytesIntoTable(TableCreator<?> tableCreator, byte[] bytes, SerializationOptions serializationOptions);
+    @Override
+    boolean hasNext();
 
     /**
-     * Extracts the {@link TableSpec} of the given table.
-     *
-     * @param bytes The encoded table.
-     * @return The {@link TableSpec} of the encoded table.
+     * @return The number of columns that have not been requested via {@link #next()}.
      */
-    TableSpec tableSpecFromBytes(byte[] bytes);
+    int getNumberRemainingCols();
+
+    /**
+     * @return The {@link TableSpec}.
+     */
+    TableSpec getTableSpec();
+
 
 }

@@ -65,7 +65,7 @@ public interface TableChunker {
      * @param numRows the number of rows to include in the returned chunk
      * @return A {@link TableIterator} over the next numRows rows of the underlying data structure
      */
-    TableIterator nextChunk(int numRows);
+    TableRep nextChunk(int numRows);
 
     /**
      * @return The number of rows remaining to be processed

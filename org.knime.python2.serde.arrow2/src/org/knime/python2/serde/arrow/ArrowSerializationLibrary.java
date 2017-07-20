@@ -39,6 +39,7 @@ import org.knime.python2.extensions.serializationlibrary.interfaces.Row;
 import org.knime.python2.extensions.serializationlibrary.interfaces.SerializationLibrary;
 import org.knime.python2.extensions.serializationlibrary.interfaces.TableCreator;
 import org.knime.python2.extensions.serializationlibrary.interfaces.TableIterator;
+import org.knime.python2.extensions.serializationlibrary.interfaces.TableRep;
 import org.knime.python2.extensions.serializationlibrary.interfaces.TableSpec;
 import org.knime.python2.extensions.serializationlibrary.interfaces.Type;
 import org.knime.python2.extensions.serializationlibrary.interfaces.impl.CellImpl;
@@ -62,7 +63,8 @@ public class ArrowSerializationLibrary implements SerializationLibrary {
     }
     
     @Override
-    public byte[] tableToBytes(TableIterator tableIterator, SerializationOptions serializationOptions) {
+    public byte[] tableToBytes(TableRep tableRep, SerializationOptions serializationOptions) {
+        TableIterator tableIterator = tableRep.getRowIterator();
         String path = "/tmp/memory_mapped.dat";
         try {
             FileChannel fc = new RandomAccessFile(new File(path), "rw").getChannel();
@@ -86,6 +88,7 @@ public class ArrowSerializationLibrary implements SerializationLibrary {
             vecs.add(rowIdVector);
             fields.add(rowIdVector.getField());
             
+            //TODO use columnIterator
             //Create FieldVectors and metadata
             for(int i=0; i<spec.getNumberColumns(); i++) {
                 JsonObjectBuilder colMetadataBuilder;

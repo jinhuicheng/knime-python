@@ -51,6 +51,7 @@ import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.ExecutionMonitor;
 import org.knime.python2.extensions.serializationlibrary.interfaces.TableChunker;
 import org.knime.python2.extensions.serializationlibrary.interfaces.TableIterator;
+import org.knime.python2.extensions.serializationlibrary.interfaces.TableRep;
 import org.knime.python2.extensions.serializationlibrary.interfaces.TableSpec;
 
 /**
@@ -70,7 +71,7 @@ public class BufferedDataTableChunker implements TableChunker {
 
     private final TableSpec m_spec;
 
-    private BufferedDataTableIterator m_currentTableIterator;
+    private BufferedDataTableRep m_currentTableRep;
 
     /**
      * Constructor.
@@ -81,7 +82,7 @@ public class BufferedDataTableChunker implements TableChunker {
      */
     public BufferedDataTableChunker(final DataTableSpec spec, final CloseableRowIterator rowIterator,
         final int numberRows) {
-        this(BufferedDataTableIterator.dataTableSpecToTableSpec(spec), rowIterator, numberRows);
+        this(BufferedDataTableRep.dataTableSpecToTableSpec(spec), rowIterator, numberRows);
     }
 
     /**
@@ -96,7 +97,7 @@ public class BufferedDataTableChunker implements TableChunker {
         m_spec = spec;
         m_iterationProperties = new IterationProperties(numberRows);
         m_iterator = rowIterator;
-        m_currentTableIterator = null;
+        m_currentTableRep = null;
     }
 
     /**
@@ -111,7 +112,7 @@ public class BufferedDataTableChunker implements TableChunker {
      * {@inheritDoc}
      */
     @Override
-    public TableIterator nextChunk(final int numRows) {
+    public TableRep nextChunk(final int numRows) {
         return nextChunk(numRows, new ExecutionMonitor());
     }
 
@@ -122,16 +123,16 @@ public class BufferedDataTableChunker implements TableChunker {
      * @param executionMonitor - an {@link ExecutionMonitor} to update while iterating over the table chunk
      * @return a {@TableIterator} for iterating over the next chunk
      */
-    public TableIterator nextChunk(int numRows, final ExecutionMonitor executionMonitor) {
+    public TableRep nextChunk(int numRows, final ExecutionMonitor executionMonitor) {
         if (numRows > m_iterationProperties.m_remainingRows) {
             numRows = m_iterationProperties.m_remainingRows;
         }
-        if (m_currentTableIterator != null) {
-            m_currentTableIterator.close();
+        if (m_currentTableRep != null) {
+            m_currentTableRep.close();
         }
-        m_currentTableIterator =
-                new BufferedDataTableIterator(m_spec, m_iterator, numRows, executionMonitor, m_iterationProperties);
-        return m_currentTableIterator;
+        m_currentTableRep =
+                new BufferedDataTableRep(m_spec, m_iterator, numRows, executionMonitor, m_iterationProperties);
+        return m_currentTableRep;
     }
 
     /**

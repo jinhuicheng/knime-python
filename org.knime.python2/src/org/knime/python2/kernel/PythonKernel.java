@@ -98,14 +98,14 @@ import org.knime.python2.extensions.serializationlibrary.interfaces.Serializatio
 import org.knime.python2.extensions.serializationlibrary.interfaces.TableChunker;
 import org.knime.python2.extensions.serializationlibrary.interfaces.TableCreator;
 import org.knime.python2.extensions.serializationlibrary.interfaces.TableCreatorFactory;
-import org.knime.python2.extensions.serializationlibrary.interfaces.TableIterator;
+import org.knime.python2.extensions.serializationlibrary.interfaces.TableRep;
 import org.knime.python2.extensions.serializationlibrary.interfaces.TableSpec;
 import org.knime.python2.extensions.serializationlibrary.interfaces.Type;
 import org.knime.python2.extensions.serializationlibrary.interfaces.impl.BufferedDataTableChunker;
 import org.knime.python2.extensions.serializationlibrary.interfaces.impl.BufferedDataTableCreator;
 import org.knime.python2.extensions.serializationlibrary.interfaces.impl.CellImpl;
 import org.knime.python2.extensions.serializationlibrary.interfaces.impl.KeyValueTableCreator;
-import org.knime.python2.extensions.serializationlibrary.interfaces.impl.KeyValueTableIterator;
+import org.knime.python2.extensions.serializationlibrary.interfaces.impl.KeyValueTableRep;
 import org.knime.python2.extensions.serializationlibrary.interfaces.impl.RowImpl;
 import org.knime.python2.extensions.serializationlibrary.interfaces.impl.TableSpecImpl;
 import org.knime.python2.extensions.serializationlibrary.interfaces.impl.TemporaryTableCreator;
@@ -370,8 +370,8 @@ public class PythonKernel {
             i++;
         }
         final TableSpec spec = new TableSpecImpl(types, columnNames, new HashMap<String, String>());
-        final TableIterator tableIterator = new KeyValueTableIterator(spec, row);
-        return m_serializer.tableToBytes(tableIterator, m_kernelOptions.getSerializationOptions());
+        final TableRep tableRep = new KeyValueTableRep(spec, row);
+        return m_serializer.tableToBytes(tableRep, m_kernelOptions.getSerializationOptions());
     }
 
     /**
@@ -478,9 +478,9 @@ public class PythonKernel {
             final int rowsInThisIteration = Math.min(numberRows - rowsDone, CHUNK_SIZE);
             final ExecutionMonitor chunkProgress =
                     serializationMonitor.createSubProgress(rowsInThisIteration / (double)numberRows);
-            final TableIterator tableIterator =
+            final TableRep tableRep =
                     ((BufferedDataTableChunker)tableChunker).nextChunk(rowsInThisIteration, chunkProgress);
-            final byte[] bytes = m_serializer.tableToBytes(tableIterator, m_kernelOptions.getSerializationOptions());
+            final byte[] bytes = m_serializer.tableToBytes(tableRep, m_kernelOptions.getSerializationOptions());
             chunkProgress.setProgress(1);
             rowsDone += rowsInThisIteration;
             serializationMonitor.setProgress(rowsDone / (double)numberRows);
@@ -536,8 +536,8 @@ public class PythonKernel {
         int rowsDone = 0;
         for (int i = 0; i < numberChunks; i++) {
             final int rowsInThisIteration = Math.min(numberRows - rowsDone, CHUNK_SIZE);
-            final TableIterator tableIterator = tableChunker.nextChunk(rowsInThisIteration);
-            final byte[] bytes = m_serializer.tableToBytes(tableIterator, m_kernelOptions.getSerializationOptions());
+            final TableRep tableRep = tableChunker.nextChunk(rowsInThisIteration);
+            final byte[] bytes = m_serializer.tableToBytes(tableRep, m_kernelOptions.getSerializationOptions());
             rowsDone += rowsInThisIteration;
             if (i == 0) {
                 m_commands.putTable(name, bytes);
@@ -953,8 +953,8 @@ public class PythonKernel {
         row.setCell(new CellImpl(conn.getTimezone()), 8);
         row.setCell(new CellImpl(jars.toArray(new String[jars.size()]), false), 9);
         final TableSpec spec = new TableSpecImpl(types, columnNames, new HashMap<String, String>());
-        final TableIterator tableIterator = new KeyValueTableIterator(spec, row);
-        final byte[] bytes = m_serializer.tableToBytes(tableIterator, m_kernelOptions.getSerializationOptions());
+        final TableRep tableRep = new KeyValueTableRep(spec, row);
+        final byte[] bytes = m_serializer.tableToBytes(tableRep, m_kernelOptions.getSerializationOptions());
         m_commands.putSql(name, bytes);
     }
 
