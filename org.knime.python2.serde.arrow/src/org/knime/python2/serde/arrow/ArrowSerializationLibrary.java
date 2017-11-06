@@ -110,6 +110,7 @@ import org.knime.python2.serde.arrow.extractors.MissingExtractor;
 import org.knime.python2.serde.arrow.extractors.StringExtractor;
 import org.knime.python2.serde.arrow.extractors.StringListExtractor;
 import org.knime.python2.serde.arrow.extractors.StringSetExtractor;
+import org.knime.python2.serde.arrow.inserters.ArrowVectorInserter;
 import org.knime.python2.serde.arrow.inserters.BooleanInserter;
 import org.knime.python2.serde.arrow.inserters.BooleanListInserter;
 import org.knime.python2.serde.arrow.inserters.BooleanSetInserter;
@@ -128,7 +129,6 @@ import org.knime.python2.serde.arrow.inserters.LongSetInserter;
 import org.knime.python2.serde.arrow.inserters.StringInserter;
 import org.knime.python2.serde.arrow.inserters.StringListInserter;
 import org.knime.python2.serde.arrow.inserters.StringSetInserter;
-import org.knime.python2.serde.arrow.inserters.ArrowVectorInserter;
 
 /**
  * @author Clemens von Schwerin, KNIME
@@ -374,6 +374,12 @@ public class ArrowSerializationLibrary implements SerializationLibrary {
         writer.writeBatch();
         writer.close();
         fc.close();
+
+        //Close inserters to free memory
+        for(ArrowVectorInserter is:inserters) {
+            is.close();
+        }
+        rootAllocator.close();
 
         return path.getBytes("UTF-8");
     }
